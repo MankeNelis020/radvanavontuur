@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-outfit), "Segoe UI", sans-serif;
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --color-forest-950: #10241c;
+  --color-forest-900: #17352a;
+  --color-forest-800: #1e4636;
+  --color-forest-700: #2c6a4e;
+  --color-forest-600: #3d7a5c;
+  --color-moss-200: #d5e2c8;
+  --color-cream-50: #fbf7f0;
+  --color-cream-100: #f3eadc;
+  --color-cream-200: #e6d5bc;
+  --color-ink: #1c1915;
+  --color-ink-soft: #4a433a;
+  --color-terracotta-500: #c4653a;
+  --color-terracotta-700: #8c3e22;
+  --color-gold-400: #e2b340;
+  --color-gold-700: #8a6414;
+  --color-sea-700: #1f5c62;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background:
+      radial-gradient(1200px 500px at 90% -10%, rgb(226 179 64 / 0.28), transparent 55%),
+      radial-gradient(900px 420px at -10% 20%, rgb(196 101 58 / 0.16), transparent 50%),
+      var(--color-cream-50);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+  }
+
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-gold-700);
+    outline-offset: 3px;
+  }
+}
+
+@utility touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}

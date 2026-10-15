@@ -1,0 +1,8 @@
+
+.DS_Store
+.next
+node_modules
+npm-debug.log*
+out
+tsconfig.tsbuildinfo
+.vercel

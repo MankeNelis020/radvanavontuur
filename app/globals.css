@@ -1,0 +1,222 @@
+@import "tailwindcss";
+
+/*
+  Wondaro design tokens.
+  Components should use these variables or the Tailwind theme mapped below.
+  Segment colors are contrast-safe derivatives of the brand palette for cream labels.
+*/
+
+:root {
+  --brand-primary: #103D32;
+  --brand-primary-dark: #082C26;
+  --brand-accent: #E8AD42;
+  --brand-background: #FFF8EB;
+  --brand-surface: #F1E5CE;
+  --brand-sage: #91AD91;
+  --brand-terracotta: #C97852;
+  --brand-text: #21352F;
+
+  --brand-text-muted: color-mix(in srgb, var(--brand-text) 78%, var(--brand-background));
+  --brand-line: color-mix(in srgb, var(--brand-primary) 22%, transparent);
+  --brand-highlight: color-mix(in srgb, var(--brand-accent) 32%, var(--brand-background));
+
+  --segment-forest: var(--brand-primary);
+  --segment-coast: #1F5C4E;
+  --segment-mountains: var(--brand-primary-dark);
+  --segment-city: #9A5A3C;
+  --segment-museum: #3E6B52;
+  --segment-nearby: #8A6A2E;
+
+  --radius-card: 24px;
+  --radius-button: 999px;
+  --radius-input: 14px;
+
+  --shadow-soft: 0 16px 40px color-mix(in srgb, var(--brand-primary-dark) 10%, transparent);
+  --shadow-raised: 0 24px 60px color-mix(in srgb, var(--brand-primary-dark) 16%, transparent);
+  --shadow-wheel: 0 18px 34px color-mix(in srgb, var(--brand-primary-dark) 18%, transparent);
+
+  --ease-adventure: cubic-bezier(0.12, 0.72, 0.08, 1);
+  --duration-spin: 4.4s;
+
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-primary-dark: var(--brand-primary-dark);
+  --color-brand-accent: var(--brand-accent);
+  --color-brand-background: var(--brand-background);
+  --color-brand-surface: var(--brand-surface);
+  --color-brand-sage: var(--brand-sage);
+  --color-brand-terracotta: var(--brand-terracotta);
+  --color-brand-text: var(--brand-text);
+  --color-brand-text-muted: var(--brand-text-muted);
+  --color-brand-line: var(--brand-line);
+  --color-brand-highlight: var(--brand-highlight);
+  --color-segment-forest: var(--segment-forest);
+  --color-segment-coast: var(--segment-coast);
+  --color-segment-mountains: var(--segment-mountains);
+  --color-segment-city: var(--segment-city);
+  --color-segment-museum: var(--segment-museum);
+  --color-segment-nearby: var(--segment-nearby);
+  --radius-card: var(--radius-card);
+  --radius-button: var(--radius-button);
+  --radius-input: var(--radius-input);
+  --font-heading: var(--font-nunito, "Nunito Sans", sans-serif);
+  --font-sans: var(--font-inter, Inter, sans-serif);
+  --font-body: var(--font-inter, Inter, sans-serif);
+  --shadow-soft: var(--shadow-soft);
+  --shadow-raised: var(--shadow-raised);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    min-height: 100vh;
+    background-color: var(--brand-background);
+    background-image:
+      radial-gradient(ellipse 70% 45% at 100% -10%, color-mix(in srgb, var(--brand-sage) 45%, transparent), transparent 55%),
+      radial-gradient(ellipse 50% 35% at -8% 12%, color-mix(in srgb, var(--brand-accent) 22%, transparent), transparent 50%);
+    color: var(--brand-text);
+    font-family: var(--font-body), Inter, sans-serif;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-heading), "Nunito Sans", sans-serif;
+    color: var(--brand-primary-dark);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.08;
+  }
+}
+
+::selection {
+  background: var(--brand-sage);
+  color: var(--brand-primary-dark);
+}
+
+:focus-visible {
+  outline: 3px solid var(--brand-background);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px var(--brand-primary);
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 50;
+  border-radius: var(--radius-button);
+  background: var(--brand-primary);
+  color: var(--brand-background);
+  padding: 0.75rem 1.25rem;
+  font-family: var(--font-heading), "Nunito Sans", sans-serif;
+  font-weight: 700;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+.range {
+  --range-fill: 0%;
+  appearance: none;
+  width: 100%;
+  height: 2.75rem;
+  margin: 0;
+  background: transparent;
+}
+
+.range::-webkit-slider-runnable-track {
+  height: 0.5rem;
+  border-radius: var(--radius-button);
+  background: linear-gradient(
+    to right,
+    var(--brand-primary) var(--range-fill),
+    color-mix(in srgb, var(--brand-primary) 22%, var(--brand-background)) var(--range-fill)
+  );
+}
+
+.range::-webkit-slider-thumb {
+  appearance: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-top: -0.65rem;
+  border-radius: var(--radius-button);
+  border: 2px solid var(--brand-primary);
+  background: var(--brand-background);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand-accent) 70%, transparent);
+}
+
+.range::-moz-range-track {
+  height: 0.5rem;
+  border: none;
+  border-radius: var(--radius-button);
+  background: color-mix(in srgb, var(--brand-primary) 22%, var(--brand-background));
+}
+
+.range::-moz-range-progress {
+  height: 0.45rem;
+  border-radius: var(--radius-button);
+  background: var(--brand-primary);
+}
+
+.range::-moz-range-thumb {
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 2px solid var(--brand-primary);
+  border-radius: var(--radius-button);
+  background: var(--brand-background);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand-accent) 70%, transparent);
+}
+
+.wheel-disc {
+  filter: drop-shadow(var(--shadow-wheel));
+}
+
+.wheel-ground {
+  height: 0.8rem;
+  width: 62%;
+  margin-inline: auto;
+  border-radius: var(--radius-button);
+  background: color-mix(in srgb, var(--brand-primary) 16%, transparent);
+  filter: blur(7px);
+}
+
+.mark-drift {
+  animation: wondaro-drift 9s linear infinite;
+}
+
+@keyframes wondaro-drift {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --brand-line: var(--brand-primary);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

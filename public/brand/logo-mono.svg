@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Wondaro">
+  <!-- PROVISIONAL Wondaro mark. This is not the approved final vector logo. Replace the files in public/brand. -->
+  <defs><clipPath id="wondaro-disc"><circle cx="64" cy="64" r="60"/></clipPath></defs>
+  <circle cx="64" cy="64" r="60" fill="#21352F"/>
+  <g clip-path="url(#wondaro-disc)">
+    <path d="M6 100 L34 64 L54 82 L80 52 L112 90" fill="none" stroke="#FFF8EB" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M64 112 C56 98 88 92 76 78 C64 64 46 62 56 46" fill="none" stroke="#FFF8EB" stroke-width="6.5" stroke-linecap="round"/>
+    <circle cx="98" cy="34" r="11" fill="#FFF8EB"/>
+    <path d="M64 14 V26" stroke="#FFF8EB" stroke-width="5" stroke-linecap="round"/>
+  </g>
+</svg>

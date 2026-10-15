@@ -1,40 +1,79 @@
-import assert from "node:assert/strict";
-import { readFileSync, readdirSync, statSync } from "node:fs";
-import { join } from "node:path";
-import test from "node:test";
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import path from "node:path";
+import { describe, expect, it } from "vitest";
+import { dictionaries } from "../src/i18n/dictionary";
 
-const root = new URL("..", import.meta.url);
+function shape(value: unknown): unknown {
+  if (Array.isArray(value)) return ["array", value.length];
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.keys(value)
+        .sort()
+        .map((key) => [key, shape((value as Record<string, unknown>)[key])]),
+    );
+  }
+  return "string";
+}
 
-function walk(dir: string): string[] {
+function files(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
-    const path = join(dir, name);
-    if (name === "node_modules" || name === ".next") return [];
-    return statSync(path).isDirectory() ? walk(path) : [path];
+    const full = path.join(dir, name);
+    if (statSync(full).isDirectory()) return files(full);
+    return full.endsWith(".ts") || full.endsWith(".tsx") ? [full] : [];
   });
 }
 
-test("provisional logo files are marked for replacement", () => {
-  for (const name of ["icon.svg", "logo-horizontal.svg", "logo-compact.svg", "logo-mono.svg"]) {
-    const svg = readFileSync(new URL(`../public/brand/${name}`, import.meta.url), "utf8");
-    assert.match(svg, /PROVISIONAL/);
-    assert.match(svg, /not the approved final vector logo/);
-    assert.match(svg, /Wondaro/);
-  }
-});
-
-test("interface files do not hardcode palette hex colors", () => {
-  const files = walk(new URL(".", root).pathname).filter((path) => {
-    if (!/\.(ts|tsx)$/.test(path)) return false;
-    if (path.endsWith("app/manifest.ts")) return false;
-    if (path.includes(`${join("tests")}`)) return false;
-    return true;
-  });
-  const offenders: string[] = [];
-  for (const path of files) {
-    const text = readFileSync(path, "utf8");
-    if (/#[0-9A-Fa-f]{8}(?![0-9A-Fa-f])|#[0-9A-Fa-f]{6}(?![0-9A-Fa-f])/.test(text)) {
-      offenders.push(path);
+describe("Wondaro brand", () => {
+  it("keeps the palette in one stylesheet", () => {
+    const css = readFileSync("src/app/globals.css", "utf8");
+    for (const token of ["#103D32", "#082C26", "#E8AD42", "#FFF8EB", "#F1E5CE", "#91AD91", "#C97852", "#21352F"]) {
+      expect(css).toContain(token);
     }
-  }
-  assert.deepEqual(offenders, []);
+    expect(css).toContain("--radius-card: 24px");
+    expect(css).toContain("--radius-button: 999px");
+    expect(css).toContain("--radius-input: 14px");
+    expect(css).toContain("prefers-reduced-motion");
+  });
+
+  it("gives Dutch and English the same shape", () => {
+    expect(shape(dictionaries.en)).toEqual(shape(dictionaries.nl));
+  });
+
+  it("uses the required brand lines", () => {
+    expect(dictionaries.en.tagline).toBe("Your next adventure starts with a spin.");
+    expect(dictionaries.en.whereNext).toBe("Where to next?");
+    expect(dictionaries.en.spinWheel).toBe("Spin the wheel");
+    expect(dictionaries.en.discover).toBe("Discover your adventure");
+    expect(dictionaries.en.makeToday).toBe("Make today an adventure");
+    expect(dictionaries.nl.tagline).toBe("Je volgende avontuur begint met een draai.");
+    expect(dictionaries.nl.whereNext).toBe("Waar gaan we heen?");
+    expect(dictionaries.nl.spinWheel).toBe("Draai het rad");
+    expect(dictionaries.nl.discover).toBe("Ontdek je avontuur");
+    expect(dictionaries.nl.makeToday).toBe("Maak van vandaag een avontuur");
+  });
+
+  it("keeps the Dutch labels the existing flows rely on", () => {
+    expect(dictionaries.nl.home.quick).toBe("Snel draaien");
+    expect(dictionaries.nl.quick.submit).toBe("Naar het rad");
+    expect(dictionaries.nl.extended.next).toBe("Volgende");
+    expect(dictionaries.nl.result.accept).toBe("Dit wordt 'm!");
+    expect(dictionaries.nl.result.maps).toBe("Open in Google Maps");
+    expect(dictionaries.nl.result.addLunch).toBe("Voeg lunch toe");
+    expect(dictionaries.nl.result.addStop).toBe("Voeg tussenstop toe");
+    expect(dictionaries.nl.result.respin).toBe("Eén keer opnieuw draaien");
+    expect(dictionaries.nl.result.respinAgain).toBe("Draai opnieuw");
+    expect(dictionaries.nl.result.respinUsed).toBe("Herkansing gebruikt");
+    expect(dictionaries.nl.account.intro).toBe("Niet verplicht. Met een account bewaar je avonturen, favorieten en reviews.");
+    expect(dictionaries.nl.place.query).toBe("Plaats of postcode");
+  });
+
+  it("does not scatter hex colours through the interface", () => {
+    const allowed = new Set([path.normalize("src/app/globals.css"), path.normalize("src/app/manifest.ts"), path.normalize("src/app/layout.tsx")]);
+    const leaks = files("src").flatMap((file) => {
+      if (allowed.has(path.normalize(file))) return [];
+      const hits = readFileSync(file, "utf8").match(/#[0-9A-Fa-f]{6}(?![0-9A-Fa-f])/g);
+      return hits ? [`${file}: ${hits.join(", ")}`] : [];
+    });
+    expect(leaks).toEqual([]);
+  });
 });

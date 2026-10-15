@@ -6,37 +6,15 @@ import { AdSlot } from "@/components/ads/AdSlot";
 import { DistanceField, LocationField } from "@/components/spin/LocationField";
 import { ParticipantsField, type ParticipantDraft } from "@/components/spin/ParticipantsField";
 import { Button } from "@/components/ui/Button";
+import { choiceClass, fieldClass } from "@/components/ui/choice";
 import { formatAge } from "@/domain/age";
 import type { Origin } from "@/domain/types";
+import { useCopy } from "@/i18n/context";
+import { fill } from "@/i18n/dictionary";
 
-const GROUPS = [
-  ["family", "Gezin met kinderen"],
-  ["couple", "Stel"],
-  ["friends", "Vrienden"],
-  ["individual", "Alleen"],
-  ["mixed", "Gemengde groep"],
-] as const;
-
-const ACCESS = [
-  ["wheelchair", "Rolstoeltoegankelijk"],
-  ["buggy", "Toegankelijk met buggy"],
-  ["stroller", "Toegankelijk met kinderwagen"],
-  ["limitedWalking", "Beperkte loopafstanden"],
-  ["stairsFree", "Vermijd trappen"],
-] as const;
-
-const INTERESTS = [
-  ["nature", "Natuur"],
-  ["animals", "Dieren"],
-  ["culture", "Cultuur"],
-  ["food", "Eten"],
-  ["sports", "Sport"],
-  ["water", "Water"],
-] as const;
-
-const LEVELS = ["Heel relaxed", "Relaxed", "Gemiddeld", "Actief", "Heel actief"];
-const MOODS = ["Pure rust", "Vooral relaxed", "In balans", "Avontuurlijk", "Heel avontuurlijk"];
-const SURPRISE = ["Vertrouwd", "Licht verrassend", "Verrassend", "Onverwacht", "Wildcard"];
+const GROUPS = ["family", "couple", "friends", "individual", "mixed"] as const;
+const ACCESS = ["wheelchair", "buggy", "stroller", "limitedWalking", "stairsFree"] as const;
+const INTERESTS = ["nature", "animals", "culture", "food", "sports", "water"] as const;
 
 function Scale({
   label,
@@ -48,7 +26,7 @@ function Scale({
   label: string;
   hint: string;
   value: number;
-  labels: string[];
+  labels: readonly string[];
   onChange: (value: number) => void;
 }) {
   return (
@@ -61,7 +39,7 @@ function Scale({
             key={item}
             type="button"
             aria-pressed={value === index + 1}
-            className={`min-h-16 rounded-2xl px-1 text-xs font-semibold ${value === index + 1 ? "bg-forest-800 text-cream-50" : "bg-cream-100"}`}
+            className={`min-h-16 rounded-input px-1 text-xs font-semibold ${value === index + 1 ? "bg-forest-800 text-cream-50" : "bg-cream-100 text-ink"}`}
             onClick={() => onChange(index + 1)}
           >
             {index + 1}. {item}
@@ -74,9 +52,10 @@ function Scale({
 
 export function ExtendedWizard() {
   const router = useRouter();
+  const { locale, t } = useCopy();
   const [step, setStep] = useState(0);
   const [participants, setParticipants] = useState<ParticipantDraft[]>([{ id: "een", ageMonths: 36 * 12 }]);
-  const [group, setGroup] = useState<(typeof GROUPS)[number][0]>("family");
+  const [group, setGroup] = useState<(typeof GROUPS)[number]>("family");
   const [access, setAccess] = useState<string[]>([]);
   const [needs, setNeeds] = useState("");
   const [allFit, setAllFit] = useState(true);
@@ -120,13 +99,13 @@ export function ExtendedWizard() {
       if (response.ok) resolved = (await response.json()) as Origin;
     }
     if (!resolved) {
-      setError("Kies een locatie voordat je draait.");
+      setError(t.extended.locationError);
       setStep(0);
       setPending(false);
       return;
     }
     if (departure === "custom" && !customDeparture) {
-      setError("Kies een vertrekmoment.");
+      setError(t.extended.departureError);
       setStep(2);
       setPending(false);
       return;
@@ -165,14 +144,15 @@ export function ExtendedWizard() {
     });
     const body = (await response.json()) as { id?: string; summary?: string };
     if (!response.ok || !body.id) {
-      setError(body.summary ?? "Geen bestemming binnen deze grenzen.");
+      setError(body.summary ?? t.extended.none);
       setPending(false);
       return;
     }
     router.push(`/avontuur/${body.id}`);
   }
 
-  const titles = ["Jullie groep", "Het soort avontuur", "Praktische grenzen", "Maak het af"];
+  const titles = t.extended.steps;
+  const from = origin ? fill(t.extended.summaryFrom, { place: origin.label }) : query ? fill(t.extended.summaryFrom, { place: query }) : "";
 
   return (
     <form
@@ -183,68 +163,66 @@ export function ExtendedWizard() {
         else void submit();
       }}
     >
-      <p className="text-sm font-semibold text-forest-800">
-        Stap {step + 1} van 4 — {titles[step]}
-      </p>
+      <p className="text-sm font-semibold text-forest-800">{fill(t.extended.step, { current: step + 1, title: titles[step] ?? "" })}</p>
       <div className="h-2 rounded-full bg-cream-200">
-        <div className="h-2 rounded-full bg-terracotta-500" style={{ width: `${((step + 1) / 4) * 100}%` }} />
+        <div className="h-2 rounded-full bg-forest-800" style={{ width: `${((step + 1) / 4) * 100}%` }} />
       </div>
       {step === 0 ? (
         <div className="space-y-6">
           <ParticipantsField participants={participants} onChange={setParticipants} />
           <LocationField origin={origin} query={query} onQuery={setQuery} onOrigin={setOrigin} error={null} />
           <fieldset>
-            <legend className="font-semibold">Samenstelling</legend>
+            <legend className="font-semibold">{t.extended.composition}</legend>
             <div className="mt-2 flex flex-wrap gap-2">
-              {GROUPS.map(([value, label]) => (
-                <button key={value} type="button" aria-pressed={group === value} className={`rounded-full px-4 py-2 ${group === value ? "bg-forest-800 text-cream-50" : "bg-cream-100"}`} onClick={() => setGroup(value)}>
-                  {label}
+              {GROUPS.map((value) => (
+                <button key={value} type="button" aria-pressed={group === value} className={choiceClass(group === value)} onClick={() => setGroup(value)}>
+                  {t.group[value]}
                 </button>
               ))}
             </div>
           </fieldset>
           <fieldset>
-            <legend className="font-semibold">Toegankelijkheid als harde eis</legend>
-            <p className="text-sm text-ink-soft">Alleen bevestigde informatie telt. Onbekend is niet hetzelfde als toegankelijk.</p>
+            <legend className="font-semibold">{t.extended.access}</legend>
+            <p className="text-sm text-ink-soft">{t.extended.accessHint}</p>
             <div className="mt-2 flex flex-wrap gap-2">
-              {ACCESS.map(([value, label]) => (
-                <button key={value} type="button" aria-pressed={access.includes(value)} className={`rounded-full px-4 py-2 ${access.includes(value) ? "bg-forest-800 text-cream-50" : "bg-cream-100"}`} onClick={() => toggle(access, value, setAccess)}>
-                  {label}
+              {ACCESS.map((value) => (
+                <button key={value} type="button" aria-pressed={access.includes(value)} className={choiceClass(access.includes(value))} onClick={() => toggle(access, value, setAccess)}>
+                  {t.access[value]}
                 </button>
               ))}
             </div>
           </fieldset>
           <label className="block font-semibold" htmlFor="behoeften">
-            Specifieke behoeften, optioneel
-            <textarea id="behoeften" value={needs} onChange={(event) => setNeeds(event.target.value)} maxLength={500} className="mt-2 w-full rounded-2xl border border-cream-200 p-3 font-normal" placeholder="Alleen voor jou bewaard. Dit stuurt de selectie niet automatisch." />
+            {t.extended.needs}
+            <textarea id="behoeften" value={needs} onChange={(event) => setNeeds(event.target.value)} maxLength={500} className={`${fieldClass} font-normal`} placeholder={t.extended.needsPlaceholder} />
           </label>
           <label className="flex items-center gap-3 font-semibold">
             <input type="checkbox" checked={allFit} onChange={(event) => setAllFit(event.target.checked)} />
-            Het uitje moet voor iedereen geschikt zijn
+            {t.extended.allFit}
           </label>
         </div>
       ) : null}
       {step === 1 ? (
         <div className="space-y-5">
-          <Scale label="Tempo" hint="Van bankhangen tot flink bewegen." value={activity} labels={LEVELS} onChange={setActivity} />
-          <Scale label="Rust of avontuur" hint="Dit stuurt de smaak, niet de veiligheid." value={mood} labels={MOODS} onChange={setMood} />
-          <Scale label="Verrassing" hint="Een wildcard blijft binnen je harde grenzen." value={surprise} labels={SURPRISE} onChange={setSurprise} />
+          <Scale label={t.extended.pace} hint={t.extended.paceHint} value={activity} labels={t.levels} onChange={setActivity} />
+          <Scale label={t.extended.mood} hint={t.extended.moodHint} value={mood} labels={t.moods} onChange={setMood} />
+          <Scale label={t.extended.surprise} hint={t.extended.surpriseHint} value={surprise} labels={t.surprises} onChange={setSurprise} />
           <fieldset>
-            <legend className="font-semibold">Binnen of buiten</legend>
-            <div className="mt-2 flex gap-2">
+            <legend className="font-semibold">{t.extended.environment}</legend>
+            <div className="mt-2 flex flex-wrap gap-2">
               {(["indoor", "outdoor", "both"] as const).map((value) => (
-                <button key={value} type="button" className={`rounded-full px-4 py-2 ${environment === value ? "bg-forest-800 text-cream-50" : "bg-cream-100"}`} onClick={() => setEnvironment(value)}>
-                  {value === "indoor" ? "Binnen" : value === "outdoor" ? "Buiten" : "Allebei"}
+                <button key={value} type="button" className={choiceClass(environment === value)} onClick={() => setEnvironment(value)}>
+                  {value === "indoor" ? t.extended.indoor : value === "outdoor" ? t.extended.outdoor : t.extended.both}
                 </button>
               ))}
             </div>
           </fieldset>
           <fieldset>
-            <legend className="font-semibold">Interesses</legend>
+            <legend className="font-semibold">{t.extended.interests}</legend>
             <div className="mt-2 flex flex-wrap gap-2">
-              {INTERESTS.map(([value, label]) => (
-                <button key={value} type="button" aria-pressed={interests.includes(value)} className={`rounded-full px-4 py-2 ${interests.includes(value) ? "bg-gold-400" : "bg-cream-100"}`} onClick={() => toggle(interests, value, setInterests)}>
-                  {label}
+              {INTERESTS.map((value) => (
+                <button key={value} type="button" aria-pressed={interests.includes(value)} className={choiceClass(interests.includes(value))} onClick={() => toggle(interests, value, setInterests)}>
+                  {t.interest[value]}
                 </button>
               ))}
             </div>
@@ -255,84 +233,80 @@ export function ExtendedWizard() {
         <div className="space-y-5">
           <DistanceField value={distance} onChange={setDistance} />
           <fieldset>
-            <legend className="font-semibold">Vervoer</legend>
+            <legend className="font-semibold">{t.extended.transport}</legend>
             <div className="mt-2 flex flex-wrap gap-2">
-              {([["car", "Auto"], ["bicycle", "Fiets"], ["walking", "Lopen"], ["public_transport", "Openbaar vervoer"]] as const).map(([value, label]) => (
-                <button key={value} type="button" className={`rounded-full px-4 py-2 ${transport === value ? "bg-forest-800 text-cream-50" : "bg-cream-100"}`} onClick={() => setTransport(value)}>
-                  {label}
+              {(["car", "bicycle", "walking", "public_transport"] as const).map((value) => (
+                <button key={value} type="button" className={choiceClass(transport === value)} onClick={() => setTransport(value)}>
+                  {t.transport[value]}
                 </button>
               ))}
             </div>
           </fieldset>
           <fieldset>
-            <legend className="font-semibold">Tijd</legend>
+            <legend className="font-semibold">{t.extended.time}</legend>
             <div className="mt-2 flex flex-wrap gap-2">
-              {([["1-2", "1–2 uur"], ["half_day", "Halve dag"], ["full_day", "Hele dag"], ["custom", "Zelf"]] as const).map(([value, label]) => (
-                <button key={value} type="button" className={`rounded-full px-4 py-2 ${time === value ? "bg-forest-800 text-cream-50" : "bg-cream-100"}`} onClick={() => setTime(value)}>
-                  {label}
+              {(["1-2", "half_day", "full_day", "custom"] as const).map((value) => (
+                <button key={value} type="button" className={choiceClass(time === value)} onClick={() => setTime(value)}>
+                  {t.time[value]}
                 </button>
               ))}
             </div>
             {time === "custom" ? (
               <label className="mt-3 block text-sm" htmlFor="minuten">
-                Minuten
-                <input id="minuten" type="number" min={30} max={720} value={customMinutes} onChange={(event) => setCustomMinutes(Number(event.target.value))} className="mt-1 w-full rounded-2xl border border-cream-200 p-3" />
+                {t.extended.minutes}
+                <input id="minuten" type="number" min={30} max={720} value={customMinutes} onChange={(event) => setCustomMinutes(Number(event.target.value))} className={fieldClass} />
               </label>
             ) : null}
           </fieldset>
           <fieldset>
-            <legend className="font-semibold">Vertrek</legend>
+            <legend className="font-semibold">{t.extended.departure}</legend>
             <div className="mt-2 flex flex-wrap gap-2">
-              {([["asap", "Zo snel mogelijk"], ["later_today", "Later vandaag"], ["tomorrow", "Morgen"], ["custom", "Zelf"]] as const).map(([value, label]) => (
-                <button key={value} type="button" className={`rounded-full px-4 py-2 ${departure === value ? "bg-forest-800 text-cream-50" : "bg-cream-100"}`} onClick={() => setDeparture(value)}>
-                  {label}
+              {(["asap", "later_today", "tomorrow", "custom"] as const).map((value) => (
+                <button key={value} type="button" className={choiceClass(departure === value)} onClick={() => setDeparture(value)}>
+                  {t.departure[value]}
                 </button>
               ))}
             </div>
             {departure === "custom" ? (
-              <input type="datetime-local" value={customDeparture} onChange={(event) => setCustomDeparture(event.target.value)} className="mt-3 w-full rounded-2xl border border-cream-200 p-3" aria-label="Eigen datum en tijd" />
+              <input type="datetime-local" value={customDeparture} onChange={(event) => setCustomDeparture(event.target.value)} className={fieldClass} aria-label={t.extended.departureCustom} />
             ) : null}
           </fieldset>
           <fieldset>
-            <legend className="font-semibold">Budget voor het hele gezelschap</legend>
+            <legend className="font-semibold">{t.extended.budget}</legend>
             <div className="mt-2 flex flex-wrap gap-2">
-              {([["none", "Geen maximum"], ["25", "Tot € 25"], ["50", "Tot € 50"], ["100", "Tot € 100"], ["custom", "Zelf"]] as const).map(([value, label]) => (
-                <button key={value} type="button" className={`rounded-full px-4 py-2 ${budget === value ? "bg-forest-800 text-cream-50" : "bg-cream-100"}`} onClick={() => setBudget(value)}>
-                  {label}
+              {(["none", "25", "50", "100", "custom"] as const).map((value) => (
+                <button key={value} type="button" className={choiceClass(budget === value)} onClick={() => setBudget(value)}>
+                  {t.budget[value]}
                 </button>
               ))}
             </div>
             {budget === "custom" ? (
-              <input type="number" min={0} value={customBudget} onChange={(event) => setCustomBudget(Number(event.target.value))} className="mt-3 w-full rounded-2xl border border-cream-200 p-3" aria-label="Eigen budget in euro" />
+              <input type="number" min={0} value={customBudget} onChange={(event) => setCustomBudget(Number(event.target.value))} className={fieldClass} aria-label={t.extended.budgetCustom} />
             ) : null}
           </fieldset>
           <fieldset>
-            <legend className="font-semibold">Mag het avontuur entree kosten?</legend>
+            <legend className="font-semibold">{t.extended.entrance}</legend>
             <div className="mt-2 space-y-2">
-              {([
-                ["free_only", "Nee, uitsluitend gratis activiteiten"],
-                ["prefer_free", "Liefst gratis, maar betaald mag"],
-                ["paid_ok", "Ja, betaalde activiteiten zijn prima"],
-              ] as const).map(([value, label]) => (
-                <label key={value} className="flex gap-3 rounded-2xl bg-cream-100 p-3">
+              {(["free_only", "prefer_free", "paid_ok"] as const).map((value) => (
+                <label key={value} className="flex gap-3 rounded-input bg-cream-100 p-3">
                   <input type="radio" name="entree" checked={entrance === value} onChange={() => setEntrance(value)} />
-                  {label}
+                  {t.entrance[value]}
                 </label>
               ))}
             </div>
             {entrance === "paid_ok" ? (
               <label className="mt-3 block text-sm" htmlFor="entreelimiet">
-                Maximum entree voor het hele gezelschap, optioneel
-                <input id="entreelimiet" inputMode="decimal" value={entranceLimit} onChange={(event) => setEntranceLimit(event.target.value)} className="mt-1 w-full rounded-2xl border border-cream-200 p-3" placeholder="Bijvoorbeeld 40" />
+                {t.extended.entranceLimit}
+                <input id="entreelimiet" inputMode="decimal" value={entranceLimit} onChange={(event) => setEntranceLimit(event.target.value)} className={fieldClass} placeholder={t.extended.entrancePlaceholder} />
               </label>
             ) : null}
           </fieldset>
           <fieldset>
-            <legend className="font-semibold">Weer</legend>
+            <legend className="font-semibold">{t.extended.weather}</legend>
             <div className="mt-2 flex flex-wrap gap-2">
-              {([["any", "Maakt niet uit"], ["avoid_rain", "Liever droog"], ["prefer_sun", "Liever zon"]] as const).map(([value, label]) => (
-                <button key={value} type="button" className={`rounded-full px-4 py-2 ${weather === value ? "bg-forest-800 text-cream-50" : "bg-cream-100"}`} onClick={() => setWeather(value)}>
-                  {label}
+              {(["any", "avoid_rain", "prefer_sun"] as const).map((value) => (
+                <button key={value} type="button" className={choiceClass(weather === value)} onClick={() => setWeather(value)}>
+                  {t.weather[value]}
                 </button>
               ))}
             </div>
@@ -342,36 +316,32 @@ export function ExtendedWizard() {
       {step === 3 ? (
         <div className="space-y-4">
           <fieldset>
-            <legend className="font-semibold">Wat hoort erbij?</legend>
+            <legend className="font-semibold">{t.extended.completion}</legend>
             <div className="mt-2 space-y-2">
-              {([
-                ["activity_only", "Alleen het avontuur"],
-                ["with_lunch", "Avontuur, lunch mag erbij"],
-                ["with_lunch_and_stop", "Avontuur, lunch en een stop op de terugweg"],
-              ] as const).map(([value, label]) => (
-                <label key={value} className="flex gap-3 rounded-2xl bg-cream-100 p-3">
+              {(["activity_only", "with_lunch", "with_lunch_and_stop"] as const).map((value) => (
+                <label key={value} className="flex gap-3 rounded-input bg-cream-100 p-3">
                   <input type="radio" name="afronding" checked={completion === value} onChange={() => setCompletion(value)} />
-                  {label}
+                  {t.completion[value]}
                 </label>
               ))}
             </div>
           </fieldset>
           <label className="flex gap-3 font-semibold">
             <input type="checkbox" checked={avoidVisited} onChange={(event) => setAvoidVisited(event.target.checked)} />
-            Sla eerder bezochte plekken over
+            {t.extended.avoidVisited}
           </label>
-          <p className="text-sm text-ink-soft">Dat werkt voor avonturen die aan een account hangen. Zonder account onthouden we ze niet als bezocht.</p>
-          <div className="rounded-3xl bg-white p-4 text-sm">
-            <p className="font-display text-2xl">Klaar om te draaien</p>
+          <p className="text-sm text-ink-soft">{t.extended.avoidHint}</p>
+          <div className="rounded-card bg-cream-100 p-4 text-sm">
+            <p className="font-display text-2xl text-forest-950">{t.extended.ready}</p>
             <ul className="mt-2 space-y-1">
-              <li>{participants.length} deelnemers: {participants.map((person) => formatAge(person.ageMonths)).join(", ")}</li>
-              <li>Straal {distance} km{origin ? ` vanaf ${origin.label}` : query ? ` vanaf ${query}` : ""}</li>
-              <li>Tempo {activity}/5, verrassing {surprise}/5</li>
+              <li>{fill(t.extended.summaryPeople, { count: participants.length, ages: participants.map((person) => formatAge(person.ageMonths, locale)).join(", ") })}</li>
+              <li>{fill(t.extended.summaryDistance, { distance, from })}</li>
+              <li>{fill(t.extended.summaryTaste, { activity, surprise })}</li>
             </ul>
             <div className="mt-3 flex flex-wrap gap-2">
               {titles.slice(0, 3).map((title, index) => (
                 <button key={title} type="button" className="text-sm font-semibold text-forest-800 underline" onClick={() => setStep(index)}>
-                  Wijzig {title.toLowerCase()}
+                  {fill(t.extended.edit, { title: title.toLowerCase() })}
                 </button>
               ))}
             </div>
@@ -382,11 +352,11 @@ export function ExtendedWizard() {
       <div className="flex gap-2">
         {step > 0 ? (
           <Button type="button" variant="quiet" onClick={() => setStep(step - 1)}>
-            Terug
+            {t.extended.back}
           </Button>
         ) : null}
         <Button type="submit" className="flex-1" disabled={pending}>
-          {step < 3 ? "Volgende" : pending ? "Bestemmingen controleren…" : "Naar het rad"}
+          {step < 3 ? t.extended.next : pending ? t.extended.pending : t.extended.submit}
         </Button>
       </div>
       <AdSlot placement="below-form" />

@@ -1,4 +1,8 @@
-# Rad van Avontuur
+# Wondaro
+
+Your next adventure starts with a spin.
+
+The interface uses the Wondaro brand. Dutch is the default language, and English is in the header. The recommendation engine, accounts, and data rules are unchanged: partnerships still do not influence a spin.
 
 Jij bepaalt de grenzen. Het rad bepaalt het avontuur.
 

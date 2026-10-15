@@ -4,16 +4,17 @@ import { useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { rotationForWinner, type WheelSegment } from "@/domain/engine/wheel";
 import { Button } from "@/components/ui/Button";
+import { useCopy } from "@/i18n/context";
 
 const COLORS = [
-  { fill: "#1e4636", text: "#fbf7f0" },
-  { fill: "#c4653a", text: "#fff8f3" },
-  { fill: "#e2b340", text: "#1c1915" },
-  { fill: "#1f5c62", text: "#fbf7f0" },
-  { fill: "#f3eadc", text: "#1c1915" },
-  { fill: "#8c3e22", text: "#fbf7f0" },
-  { fill: "#3d7a5c", text: "#fbf7f0" },
-  { fill: "#d5e2c8", text: "#1c1915" },
+  { fill: "var(--wheel-1)", text: "var(--wheel-1-text)" },
+  { fill: "var(--wheel-2)", text: "var(--wheel-2-text)" },
+  { fill: "var(--wheel-3)", text: "var(--wheel-3-text)" },
+  { fill: "var(--wheel-4)", text: "var(--wheel-4-text)" },
+  { fill: "var(--wheel-5)", text: "var(--wheel-5-text)" },
+  { fill: "var(--wheel-6)", text: "var(--wheel-6-text)" },
+  { fill: "var(--wheel-7)", text: "var(--wheel-7-text)" },
+  { fill: "var(--wheel-8)", text: "var(--wheel-8-text)" },
 ];
 
 function segmentPath(start: number, end: number): string {
@@ -62,6 +63,7 @@ export function AdventureWheel({
   winnerId: string;
   onRevealed: () => void;
 }) {
+  const { t } = useCopy();
   const reduced = useReducedMotion();
   const [spinning, setSpinning] = useState(false);
   const [sound, setSound] = useState(false);
@@ -77,53 +79,41 @@ export function AdventureWheel({
   return (
     <div className="mx-auto w-full max-w-md">
       <div className="relative aspect-square">
-        <div
-          aria-hidden
-          className="absolute top-1 left-1/2 z-10 h-0 w-0 -translate-x-1/2 border-x-[14px] border-t-[28px] border-x-transparent border-t-forest-950"
-        />
+        <div aria-hidden className="absolute top-1 left-1/2 z-10 h-0 w-0 -translate-x-1/2 border-x-[14px] border-t-[28px] border-x-transparent border-t-forest-950" />
         <motion.div
-          className="h-full w-full"
+          className="wheel-disc h-full w-full"
           animate={{ rotate: spinning ? rotation : 0 }}
-          transition={reduced || !spinning ? { duration: 0 } : { duration: 4.8, ease: [0.12, 0.62, 0.08, 1] }}
+          transition={reduced || !spinning ? { duration: 0 } : { duration: 4.8, ease: [0.12, 0.72, 0.08, 1] }}
           onAnimationComplete={() => {
             if (spinning) onRevealed();
           }}
         >
-          <svg viewBox="0 0 100 100" role="img" aria-label="Rad met de kanshebbers voor dit avontuur" className="h-full w-full drop-shadow-xl">
-            <circle cx="50" cy="50" r="49" fill="#17352a" />
+          <svg viewBox="0 0 100 100" role="img" aria-label={t.wheel.label} className="h-full w-full">
+            <circle cx="50" cy="50" r="49" fill="var(--brand-primary-dark)" />
             {segments.map((segment, index) => {
               const color = COLORS[index % COLORS.length] ?? COLORS[0];
               const point = labelPoint(segment.startDegrees, segment.endDegrees);
               return (
                 <g key={segment.id}>
-                  <path d={segmentPath(segment.startDegrees, segment.endDegrees)} fill={color.fill} stroke="#fbf7f0" strokeWidth="0.4" />
-                  <text
-                    x={point.x}
-                    y={point.y}
-                    fill={color.text}
-                    fontSize="3.1"
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                  >
+                  <path d={segmentPath(segment.startDegrees, segment.endDegrees)} fill={color.fill} stroke="var(--brand-background)" strokeWidth="0.45" />
+                  <text x={point.x} y={point.y} fill={color.text} fontSize="3.1" textAnchor="middle" dominantBaseline="middle">
                     {segment.label.length > 16 ? `${segment.label.slice(0, 15)}…` : segment.label}
                   </text>
                 </g>
               );
             })}
-            <circle cx="50" cy="50" r="8" fill="#fbf7f0" />
-            <circle cx="50" cy="50" r="4.5" fill="#c4653a" />
+            <circle cx="50" cy="50" r="8" fill="var(--brand-background)" />
+            <circle cx="50" cy="50" r="3.2" fill="var(--brand-accent)" />
           </svg>
         </motion.div>
       </div>
-      <p className="mt-4 text-center text-sm text-ink-soft">
-        De vakgrootte volgt het selectiegewicht. De winnaar is al gekozen; het rad laat die uitslag zien.
-      </p>
+      <p className="mt-4 text-center text-sm text-ink-soft">{t.wheel.caption}</p>
       <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:justify-center">
         <Button type="button" className="text-lg" onClick={spin} disabled={spinning}>
-          Draai het rad
+          {t.spinWheel}
         </Button>
         <Button type="button" variant="quiet" aria-pressed={sound} onClick={() => setSound((value) => !value)}>
-          {sound ? "Geluid aan" : "Geluid uit"}
+          {sound ? t.wheel.soundOn : t.wheel.soundOff}
         </Button>
       </div>
     </div>

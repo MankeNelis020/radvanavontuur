@@ -6,10 +6,12 @@ import { AdSlot } from "@/components/ads/AdSlot";
 import { DistanceField, LocationField } from "@/components/spin/LocationField";
 import { ParticipantsField, type ParticipantDraft } from "@/components/spin/ParticipantsField";
 import { Button } from "@/components/ui/Button";
+import { useCopy } from "@/i18n/context";
 import type { Origin } from "@/domain/types";
 
 export function QuickSpinForm() {
   const router = useRouter();
+  const { t } = useCopy();
   const [participants, setParticipants] = useState<ParticipantDraft[]>([
     { id: "een", ageMonths: 34 * 12 },
     { id: "twee", ageMonths: 6 * 12 },
@@ -36,7 +38,7 @@ export function QuickSpinForm() {
     setError(null);
     const resolved = await resolveOrigin();
     if (!resolved) {
-      setError("Kies je locatie of een plaats die we herkennen.");
+      setError(t.quick.locationError);
       setPending(false);
       return;
     }
@@ -52,7 +54,7 @@ export function QuickSpinForm() {
     });
     const body = (await response.json()) as { id?: string; summary?: string };
     if (!response.ok || !body.id) {
-      setError(body.summary ?? "Er is geen avontuur gevonden binnen deze grenzen.");
+      setError(body.summary ?? t.quick.none);
       setPending(false);
       return;
     }
@@ -70,12 +72,12 @@ export function QuickSpinForm() {
       <ParticipantsField participants={participants} onChange={setParticipants} />
       <DistanceField value={distance} onChange={setDistance} />
       <LocationField origin={origin} query={query} onQuery={setQuery} onOrigin={setOrigin} error={error} />
-      <div className="rounded-3xl bg-white/70 p-4 text-sm text-ink-soft">
-        <p className="font-semibold text-ink">Standaard voor de snelle draai</p>
-        <p>Binnen en buiten, gebalanceerd tempo, geen budgetmaximum, betaald mag, vertrek zo snel mogelijk, halve dag. Geen vervoermiddel, dus geen verzonnen reistijd.</p>
+      <div className="rounded-card bg-cream-100 p-4 text-sm text-ink-soft">
+        <p className="font-semibold text-ink">{t.quick.defaultsTitle}</p>
+        <p>{t.quick.defaults}</p>
       </div>
       <Button type="submit" className="w-full text-lg" disabled={pending}>
-        {pending ? "Bestemmingen controleren…" : "Naar het rad"}
+        {pending ? t.quick.pending : t.quick.submit}
       </Button>
       <AdSlot placement="below-form" />
     </form>

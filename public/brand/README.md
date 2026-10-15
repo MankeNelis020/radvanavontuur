@@ -11,4 +11,4 @@ Replace these files to update the interface:
 - `icon.svg` — app icon
 - `logo-mono.svg` — single-ink mark for light backgrounds
 
-`app/icon.svg` is the favicon copy of `icon.svg`. Update both together.
+`public/icon.svg` is the favicon copy of `icon.svg`. Update both together.

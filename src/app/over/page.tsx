@@ -1,15 +1,13 @@
-export default function AboutPage() {
+import { getDictionary } from "@/i18n/locale";
+
+export default async function AboutPage() {
+  const { t } = await getDictionary();
   return (
     <article className="mx-auto max-w-xl space-y-4 px-4 py-6">
-      <h1 className="font-display text-4xl">Hoe het rad kiest</h1>
-      <p>
-        Eerst gelden je grenzen: afstand, leeftijd, toegankelijkheid, budget, openingstijden als die bekend zijn, vervoer en weer.
-        Daarna krijgt elke overgebleven plek een gewicht op basis van interesses, tempo en verrassing. Een zwaardere plek heeft meer kans, maar een lichtere plek kan nog steeds vallen.
-      </p>
-      <p>
-        Het rad tekent die gewichten. Het stopt op de plek die de motor al had gekozen. Een partner, korting of advertentie komt daar niet in voor.
-      </p>
-      <p>Je mag één keer opnieuw draaien, met een reden. Daarna blijft die sessie bij de tweede uitslag, tenzij een plek aantoonbaar dicht of onveilig is.</p>
+      <h1 className="font-display text-4xl text-forest-950">{t.about.title}</h1>
+      <p>{t.about.p1}</p>
+      <p>{t.about.p2}</p>
+      <p>{t.about.p3}</p>
     </article>
   );
 }

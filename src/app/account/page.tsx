@@ -2,13 +2,19 @@ import type { Metadata } from "next";
 import { AccountPanel } from "@/components/account/AccountPanel";
 import { authConfigured } from "@/auth/config";
 import { createSupabaseServerClient } from "@/auth/server";
+import { getDictionary } from "@/i18n/locale";
 import { getStore } from "@/persistence/get-store";
 import { readOwnerToken } from "@/server/owner";
 
-export const metadata: Metadata = { title: "Account" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getDictionary();
+  return { title: t.account.title };
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function AccountPage() {
+  const { t } = await getDictionary();
   const supabase = await createSupabaseServerClient();
   let email: string | null = null;
   if (supabase) {
@@ -20,8 +26,8 @@ export default async function AccountPage() {
   }
   return (
     <div className="mx-auto max-w-xl px-4 py-6">
-      <h1 className="font-display text-4xl">Account</h1>
-      <p className="mt-2 text-ink-soft">Niet verplicht. Met een account bewaar je avonturen, favorieten en reviews.</p>
+      <h1 className="font-display text-4xl text-forest-950">{t.account.title}</h1>
+      <p className="mt-2 text-ink-soft">{t.account.intro}</p>
       <div className="mt-6">
         <AccountPanel configured={authConfigured()} email={email} />
       </div>

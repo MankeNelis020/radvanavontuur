@@ -1,11 +1,14 @@
-export default function PrivacyPage() {
+import { getDictionary } from "@/i18n/locale";
+
+export default async function PrivacyPage() {
+  const { t } = await getDictionary();
   return (
     <article className="mx-auto max-w-xl space-y-4 px-4 py-6">
-      <h1 className="font-display text-4xl">Privacy</h1>
-      <p>Je kunt draaien zonder account. Specifieke behoeften blijven op je eigen sessie en gaan niet mee in een deellink of naar een partner.</p>
-      <p>Een gedeelde link bevat geen huislocatie. De ontvanger navigeert vanaf de eigen plek.</p>
-      <p>Analytics starten pas na toestemming en bevatten geen precieze coördinaten. Een klik naar Maps is geen bezoek.</p>
-      <p>Gastavonturen willen we na 30 dagen wissen. Reviews verdwijnen als het account verdwijnt. Partners kunnen een negatieve review niet laten verwijderen omdat ze betalen.</p>
+      <h1 className="font-display text-4xl text-forest-950">{t.privacy.title}</h1>
+      <p>{t.privacy.p1}</p>
+      <p>{t.privacy.p2}</p>
+      <p>{t.privacy.p3}</p>
+      <p>{t.privacy.p4}</p>
     </article>
   );
 }

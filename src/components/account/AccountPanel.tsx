@@ -4,24 +4,24 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/auth/browser";
 import { Button } from "@/components/ui/Button";
+import { fieldClass } from "@/components/ui/choice";
+import { useCopy } from "@/i18n/context";
+import { fill } from "@/i18n/dictionary";
 
 export function AccountPanel({ configured, email }: { configured: boolean; email: string | null }) {
   const router = useRouter();
+  const { t } = useCopy();
   const [address, setAddress] = useState("");
   const [message, setMessage] = useState<string | null>(null);
 
   if (!configured) {
-    return (
-      <p className="rounded-3xl bg-cream-100 p-4">
-        Accounts zijn nog niet aangesloten. Zet Supabase-variabelen in de omgeving. Tot die tijd werkt het rad gewoon zonder account.
-      </p>
-    );
+    return <p className="rounded-card bg-cream-100 p-4">{t.account.unconfigured}</p>;
   }
 
   if (email) {
     return (
       <div className="space-y-3">
-        <p>Je bent ingelogd als {email}. Avonturen uit deze browser zijn aan dit account gekoppeld als ze nog van niemand waren.</p>
+        <p>{fill(t.account.signedIn, { email })}</p>
         <Button
           type="button"
           variant="quiet"
@@ -32,7 +32,7 @@ export function AccountPanel({ configured, email }: { configured: boolean; email
             router.refresh();
           }}
         >
-          Uitloggen
+          {t.account.signOut}
         </Button>
       </div>
     );
@@ -49,14 +49,14 @@ export function AccountPanel({ configured, email }: { configured: boolean; email
           email: address,
           options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
         });
-        setMessage(error ? "De inlogmail kon niet worden verstuurd." : "Kijk in je inbox voor de inloglink.");
+        setMessage(error ? t.account.failed : t.account.sent);
       }}
     >
       <label className="block font-semibold" htmlFor="email">
-        E-mailadres
-        <input id="email" type="email" required value={address} onChange={(event) => setAddress(event.target.value)} className="mt-1 w-full rounded-2xl border border-cream-200 p-3 font-normal" />
+        {t.account.email}
+        <input id="email" type="email" required value={address} onChange={(event) => setAddress(event.target.value)} className={fieldClass} />
       </label>
-      <Button type="submit">Stuur een inloglink</Button>
+      <Button type="submit">{t.account.send}</Button>
       {message ? <p role="status">{message}</p> : null}
     </form>
   );

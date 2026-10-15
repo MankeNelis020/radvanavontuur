@@ -1,12 +1,14 @@
 import Link from "next/link";
+import { getDictionary } from "@/i18n/locale";
 
-export default function NotFound() {
+export default async function NotFound() {
+  const { t } = await getDictionary();
   return (
     <div className="mx-auto max-w-xl px-4 py-16">
-      <h1 className="font-display text-4xl">Deze pagina is er niet</h1>
-      <p className="mt-2">Het avontuur is verlopen of hoort bij een andere browser.</p>
+      <h1 className="font-display text-4xl text-forest-950">{t.status.missingTitle}</h1>
+      <p className="mt-2">{t.status.missingBody}</p>
       <Link href="/" className="mt-6 inline-block font-semibold text-forest-800 underline">
-        Terug naar het begin
+        {t.status.home}
       </Link>
     </div>
   );

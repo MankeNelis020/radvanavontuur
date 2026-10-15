@@ -1,9 +1,10 @@
-import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 
-const eslintConfig = defineConfig([
+const config = [
   ...nextVitals,
-  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
-]);
+  {
+    ignores: [".data/**", "playwright-report/**", "test-results/**", "coverage/**"],
+  },
+];
 
-export default eslintConfig;
+export default config;

@@ -8,7 +8,7 @@ Mobiele webapp om met één draai een echt uitje te kiezen. De aanbevelingsmotor
 
 - Snel draaien en uitgebreid draaien, in het Nederlands, zonder account.
 - Leeftijden per deelnemer, inclusief maanden onder de twee jaar.
-- Locatie via de browser, via Open-Meteo of via een interne lijst van plaatscentra.
+- Locatie delen via de browser, of een plaatsnaam via Open-Meteo of een interne lijst van plaatscentra. Het precieze punt gaat niet mee in een deellink. De ontvanger kan zelf een locatie delen voor de route.
 - Straal in kilometers, niet in reistijd.
 - Geanimeerd rad dat stopt op de vooraf gekozen bestemming. Geluid staat uit. Minder beweging wordt gerespecteerd.
 - Eén herkansing met reden. Een operationele vervanging als iets dicht of onveilig is, telt daar niet mee.

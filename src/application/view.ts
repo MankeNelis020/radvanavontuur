@@ -1,5 +1,6 @@
 import { activeSelection, affiliateFor, mapsUrlFor, promotionFor } from "@/application/adventures";
 import { formatKm } from "@/domain/geo";
+import { travelModeParam, type MapPoint, type TravelModeParam } from "@/domain/maps";
 import { formatEntrance } from "@/domain/pricing";
 import type { StoredSession } from "@/persistence/types";
 import type { PromotionView } from "@/domain/promotions/types";
@@ -42,6 +43,11 @@ export type AdventureView = {
   lunch: { name: string; address: string; reason: string } | null;
   returnStop: { name: string; address: string; reason: string } | null;
   mapsUrl: string | null;
+  publicRoute: {
+    destination: MapPoint;
+    waypoints: MapPoint[];
+    travelMode: TravelModeParam;
+  } | null;
   promotion: PromotionView | null;
   affiliate: AffiliateOffer | null;
   sources: StoredSession["sources"];
@@ -127,6 +133,25 @@ export async function toAdventureView(session: StoredSession, shared: boolean): 
         }
       : null,
     mapsUrl: mapsUrlFor(session, !shared),
+    publicRoute: current
+      ? {
+          destination: {
+            lat: current.destination.latitude,
+            lng: current.destination.longitude,
+            name: current.destination.name,
+            placeId: current.destination.providerPlaceId,
+          },
+          waypoints: [session.lunch, session.returnStop]
+            .filter((stop): stop is NonNullable<typeof stop> => Boolean(stop))
+            .map((stop) => ({
+              lat: stop.destination.latitude,
+              lng: stop.destination.longitude,
+              name: stop.destination.name,
+              placeId: stop.destination.providerPlaceId,
+            })),
+          travelMode: travelModeParam(preferences.transportation),
+        }
+      : null,
     promotion,
     affiliate,
     sources: session.sources,

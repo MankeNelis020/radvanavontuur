@@ -192,7 +192,16 @@ export function ExtendedWizard() {
       {step === 0 ? (
         <div className="space-y-6">
           <ParticipantsField participants={participants} onChange={setParticipants} />
-          <LocationField origin={origin} query={query} onQuery={setQuery} onOrigin={setOrigin} error={null} />
+          <LocationField
+            origin={origin}
+            query={query}
+            onQuery={setQuery}
+            onOrigin={(value) => {
+              setOrigin(value);
+              if (value) setError(null);
+            }}
+            error={null}
+          />
           <fieldset>
             <legend className="font-semibold">Samenstelling</legend>
             <div className="mt-2 flex flex-wrap gap-2">

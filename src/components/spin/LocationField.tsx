@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { CITY_CENTERS } from "@/data/cities";
+import { geolocationErrorMessage, readDevicePosition } from "@/components/location/device-position";
 import type { Origin } from "@/domain/types";
 
 export function LocationField({
@@ -16,37 +18,54 @@ export function LocationField({
   onOrigin: (origin: Origin | null) => void;
   error: string | null;
 }) {
-  function useBrowserLocation() {
-    if (!navigator.geolocation) {
-      onOrigin(null);
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        onOrigin({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-          label: "Jouw locatie",
-          source: "geolocation",
+  const [pending, setPending] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
+
+  async function shareLocation() {
+    setLocalError(null);
+    setPending(true);
+    try {
+      const position = await readDevicePosition();
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+      let label = "Je gedeelde locatie";
+      try {
+        const response = await fetch("/api/locatie", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ lat: Number(lat.toFixed(2)), lng: Number(lng.toFixed(2)) }),
         });
-      },
-      () => onOrigin(null),
-      { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 },
-    );
+        if (response.ok) {
+          const body = (await response.json()) as { label?: string };
+          if (body.label) label = body.label;
+        }
+      } catch {
+        // Het precieze punt blijft bruikbaar, ook zonder plaatsnaam.
+      }
+      onQuery("");
+      onOrigin({ lat, lng, label, source: "geolocation" });
+    } catch (caught) {
+      onOrigin(null);
+      setLocalError(geolocationErrorMessage(caught));
+    } finally {
+      setPending(false);
+    }
   }
 
   return (
     <fieldset className="space-y-3">
       <legend className="font-display text-2xl">Waar beginnen jullie?</legend>
       <p className="text-sm text-ink-soft">
-        We vragen je locatie alleen als je dat toestaat. Een plaatsnaam mag ook. Die wordt een plaatscentrum, geen huisadres.
+        Deel je locatie als je vanaf je echte punt wilt draaien. Dat punt hoort bij dit avontuur en gaat niet mee in een deellink. Een plaatsnaam mag ook; dat is dan het plaatscentrum.
       </p>
       <button
         type="button"
-        className="touch-target w-full rounded-full bg-forest-800 px-5 py-3 font-semibold text-cream-50"
-        onClick={useBrowserLocation}
+        className="touch-target w-full rounded-full bg-forest-800 px-5 py-3 font-semibold text-cream-50 disabled:opacity-60"
+        onClick={() => void shareLocation()}
+        disabled={pending}
+        aria-busy={pending}
       >
-        Gebruik mijn locatie
+        {pending ? "Locatie delen…" : "Deel mijn locatie"}
       </button>
       <label className="block text-sm font-semibold" htmlFor="plaats">
         Plaats of postcode
@@ -58,6 +77,7 @@ export function LocationField({
         onChange={(event) => {
           onQuery(event.target.value);
           onOrigin(null);
+          setLocalError(null);
         }}
         className="w-full rounded-2xl border border-cream-200 bg-white px-4 py-3"
         placeholder="Bijvoorbeeld Utrecht"
@@ -68,10 +88,16 @@ export function LocationField({
           <option key={city.name} value={city.name} />
         ))}
       </datalist>
-      {origin ? <p className="text-sm text-forest-800">Gekozen: {origin.label}</p> : null}
-      {error ? (
+      {origin?.source === "geolocation" ? (
+        <p className="text-sm text-forest-800" role="status">
+          Locatie gedeeld: {origin.label}. Het precieze punt gebruiken we voor de straal en gaat niet mee in een deellink.
+        </p>
+      ) : origin ? (
+        <p className="text-sm text-forest-800">Gekozen: {origin.label}</p>
+      ) : null}
+      {localError || error ? (
         <p role="alert" className="text-sm font-semibold text-terracotta-700">
-          {error}
+          {localError || error}
         </p>
       ) : null}
     </fieldset>

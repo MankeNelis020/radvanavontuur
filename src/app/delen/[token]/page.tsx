@@ -15,7 +15,9 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
   const view = await toAdventureView(session, true);
   return (
     <div className="mx-auto max-w-xl px-4 py-4">
-      <p className="mb-4 text-sm text-ink-soft">Gedeeld avontuur. Het startpunt van de afzender staat hier niet in.</p>
+      <p className="mb-4 text-sm text-ink-soft">
+        Gedeeld avontuur. Het startpunt van de afzender staat hier niet in. Deel je eigen locatie als je vanaf daar wilt navigeren.
+      </p>
       <AdventureExperience view={view} signedIn={false} />
     </div>
   );

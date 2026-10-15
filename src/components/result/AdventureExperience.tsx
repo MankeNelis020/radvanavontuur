@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AdSlot } from "@/components/ads/AdSlot";
+import { RouteFromHere } from "@/components/result/RouteFromHere";
 import { AdventureWheel } from "@/components/wheel/AdventureWheel";
 import { Button } from "@/components/ui/Button";
 import { REVIEW_TAGS } from "@/content/reviews";
@@ -245,10 +246,13 @@ export function AdventureExperience({ view, signedIn }: { view: AdventureView; s
         </div>
       ) : null}
 
-      {view.shared && view.mapsUrl ? (
-        <a className="touch-target flex w-full items-center justify-center rounded-full bg-forest-800 px-5 py-3 font-semibold text-cream-50" href={view.mapsUrl}>
-          Route vanaf mijn locatie
-        </a>
+      {view.shared && view.publicRoute ? (
+        <RouteFromHere
+          destination={view.publicRoute.destination}
+          waypoints={view.publicRoute.waypoints}
+          travelMode={view.publicRoute.travelMode}
+          destinationHref={view.mapsUrl}
+        />
       ) : null}
 
       {asking ? (

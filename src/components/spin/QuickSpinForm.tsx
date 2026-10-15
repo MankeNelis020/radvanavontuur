@@ -69,7 +69,16 @@ export function QuickSpinForm() {
     >
       <ParticipantsField participants={participants} onChange={setParticipants} />
       <DistanceField value={distance} onChange={setDistance} />
-      <LocationField origin={origin} query={query} onQuery={setQuery} onOrigin={setOrigin} error={error} />
+      <LocationField
+        origin={origin}
+        query={query}
+        onQuery={setQuery}
+        onOrigin={(value) => {
+          setOrigin(value);
+          if (value) setError(null);
+        }}
+        error={error}
+      />
       <div className="rounded-3xl bg-white/70 p-4 text-sm text-ink-soft">
         <p className="font-semibold text-ink">Standaard voor de snelle draai</p>
         <p>Binnen en buiten, gebalanceerd tempo, geen budgetmaximum, betaald mag, vertrek zo snel mogelijk, halve dag. Geen vervoermiddel, dus geen verzonnen reistijd.</p>

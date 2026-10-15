@@ -1,18 +1,62 @@
+function requestPosition(timeout: number): Promise<GeolocationPosition> {
+  return new Promise((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(resolve, reject, {
+      enableHighAccuracy: true,
+      timeout,
+      maximumAge: 0,
+    });
+  });
+}
+
+async function queryGeoPermission(): Promise<PermissionStatus | null> {
+  if (!navigator.permissions?.query) return null;
+  try {
+    return await navigator.permissions.query({ name: "geolocation" });
+  } catch {
+    return null;
+  }
+}
+
+function waitForPermission(permission: PermissionStatus, timeoutMs: number): Promise<PermissionState> {
+  if (permission.state !== "prompt") return Promise.resolve(permission.state);
+  return new Promise((resolve) => {
+    const timer = window.setTimeout(() => {
+      permission.onchange = null;
+      resolve(permission.state);
+    }, timeoutMs);
+    permission.onchange = () => {
+      window.clearTimeout(timer);
+      permission.onchange = null;
+      resolve(permission.state);
+    };
+  });
+}
+
 export function devicePositionAvailable(): boolean {
   return window.isSecureContext && "geolocation" in navigator;
 }
 
-export function readDevicePosition(): Promise<GeolocationPosition> {
+export async function readDevicePosition(): Promise<GeolocationPosition> {
   if (!devicePositionAvailable()) {
     return Promise.reject(new Error("unavailable"));
   }
-  return new Promise((resolve, reject) => {
-    navigator.geolocation.getCurrentPosition(resolve, reject, {
-      enableHighAccuracy: true,
-      timeout: 12000,
-      maximumAge: 0,
-    });
-  });
+  const permission = await queryGeoPermission();
+  if (permission?.state === "prompt") {
+    const pending = requestPosition(20_000);
+    const decision = await waitForPermission(permission, 60_000);
+    if (decision === "denied") {
+      pending.catch(() => undefined);
+      return Promise.reject({ code: 1 });
+    }
+    if (decision === "granted") {
+      try {
+        return await pending;
+      } catch {
+        return requestPosition(20_000);
+      }
+    }
+  }
+  return requestPosition(20_000);
 }
 
 export function geolocationErrorMessage(error: unknown): string {

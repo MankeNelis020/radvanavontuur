@@ -1,0 +1,134 @@
+@import "tailwindcss";
+
+:root {
+  --brand-primary: #103D32;
+  --brand-primary-dark: #082C26;
+  --brand-accent: #E8AD42;
+  --brand-background: #FFF8EB;
+  --brand-surface: #F1E5CE;
+  --brand-sage: #91AD91;
+  --brand-terracotta: #C97852;
+  --brand-text: #21352F;
+  --brand-text-muted: color-mix(in srgb, #21352F 78%, #FFF8EB);
+  --brand-line: color-mix(in srgb, #103D32 18%, #F1E5CE);
+  --radius-card: 24px;
+  --radius-button: 999px;
+  --radius-input: 14px;
+  --shadow-soft: 0 18px 40px rgb(8 44 38 / 0.12);
+  --duration-spin: 4.8s;
+  --ease-adventure: cubic-bezier(0.12, 0.72, 0.08, 1);
+
+  --wheel-1: #103D32;
+  --wheel-1-text: #FFF8EB;
+  --wheel-2: #1F5C4E;
+  --wheel-2-text: #FFF8EB;
+  --wheel-3: #9A5A3C;
+  --wheel-3-text: #FFF8EB;
+  --wheel-4: #3E6B52;
+  --wheel-4-text: #FFF8EB;
+  --wheel-5: #F1E5CE;
+  --wheel-5-text: #21352F;
+  --wheel-6: #082C26;
+  --wheel-6-text: #FFF8EB;
+  --wheel-7: #8A6A2E;
+  --wheel-7-text: #FFF8EB;
+  --wheel-8: #245C48;
+  --wheel-8-text: #FFF8EB;
+}
+
+@theme inline {
+  --font-sans: var(--font-inter), "Segoe UI", sans-serif;
+  --font-display: var(--font-nunito), "Trebuchet MS", sans-serif;
+  --color-forest-950: #082C26;
+  --color-forest-900: #082C26;
+  --color-forest-800: #103D32;
+  --color-forest-700: #1F5C4E;
+  --color-forest-600: #3E6B52;
+  --color-moss-200: #91AD91;
+  --color-cream-50: #FFF8EB;
+  --color-cream-100: #F1E5CE;
+  --color-cream-200: #E4D3B4;
+  --color-ink: #21352F;
+  --color-ink-soft: #3D534B;
+  --color-terracotta-500: #C97852;
+  --color-terracotta-700: #9A5A3C;
+  --color-gold-400: #E8AD42;
+  --color-gold-700: #8A6A2E;
+  --color-sea-700: #1F5C4E;
+  --radius-card: 24px;
+  --radius-button: 999px;
+  --radius-input: 14px;
+  --shadow-soft: 0 18px 40px rgb(8 44 38 / 0.12);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--brand-background);
+    color: var(--brand-text);
+    font-family: var(--font-sans);
+  }
+
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--brand-background);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 6px var(--brand-primary);
+  }
+
+  ::selection {
+    background: var(--brand-sage);
+    color: var(--brand-primary-dark);
+  }
+}
+
+@utility touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.wheel-disc {
+  filter: drop-shadow(0 18px 28px rgb(8 44 38 / 0.16));
+}
+
+.hero-wheel {
+  background: conic-gradient(
+    var(--wheel-1) 0 16.67%,
+    var(--wheel-2) 0 33.33%,
+    var(--wheel-5) 0 50%,
+    var(--wheel-3) 0 66.67%,
+    var(--wheel-6) 0 83.33%,
+    var(--wheel-4) 0 100%
+  );
+  box-shadow: var(--shadow-soft);
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --brand-line: var(--brand-primary);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
